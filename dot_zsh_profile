@@ -1,0 +1,2 @@
+alias nvim="~/.local/neovim/bin/nvim"
+export PATH="~/.local/bin:$PATH"

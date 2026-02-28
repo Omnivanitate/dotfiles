@@ -1,0 +1,25 @@
+# Lines configured by zsh-newuser-install
+HISTFILE=~/.local/state/zsh/.histfile
+HISTSIZE=5000
+SAVEHIST=10000
+bindkey -v
+# End of lines configured by zsh-newuser-install
+# The following lines were added by compinstall
+zstyle :compinstall filename '/home/devuser/.zshrc'
+
+autoload -Uz compinit
+compinit
+# End of lines added by compinstall
+
+export ZSH="$HOME/.local/oh-my-zsh"
+
+ZSH_THEME="murilasso"
+ENABLE_CORRECTION="true"
+COMPLETION_WAITING_DOTS="true"
+DISABLE_UNTRACKED_FILES_DIRTY="true"
+
+
+plugins=(git)
+
+source $ZSH/oh-my-zsh.sh
+source $HOME/.zsh_profile
