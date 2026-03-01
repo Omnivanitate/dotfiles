@@ -1,2 +1,11 @@
 alias nvim="~/.local/neovim/bin/nvim"
-export PATH="~/.local/bin:$PATH"
+export PATH="~/.local/bin:~/.local/neovim/bin:$PATH"
+
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_DATA_HOME="$HOME/.local/share"
+export XDG_CACHE_HOME="$HOME/.cache"
+export XDG_STATE_HOME="$HOME/.local/state"
+
+export ZSH_COMPDUMP="$HOME/.cache/zsh/.zcompdump"
+
+export EDITOR="nvim"
