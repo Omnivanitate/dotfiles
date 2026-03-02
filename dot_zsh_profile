@@ -8,4 +8,4 @@ export XDG_STATE_HOME="$HOME/.local/state"
 
 export ZSH_COMPDUMP="$HOME/.cache/zsh/.zcompdump"
 
-export EDITOR="nvim"
+export EDITOR="$HOME/.local/neovim/bin/nvim"
