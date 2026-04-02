@@ -1,0 +1,20 @@
+profile: ".zsh_profile"
+
+zsh:
+  enable: true
+
+tmux:
+  enable: true
+
+rust:
+  enable: true
+  cargo_home: "${HOME}/.local/cargo"
+  rustup_home: "$HOME}/.local/rustup"
+
+c_cpp:
+  enable: true
+
+neovim:
+  enable: true
+  version: "0.12.0"
+

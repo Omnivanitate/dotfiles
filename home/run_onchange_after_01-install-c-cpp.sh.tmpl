@@ -1,0 +1,10 @@
+{{- if .c_cpp.enable -}}
+#!/bin/sh
+
+{{ if eq .chezmoi.os "linux" -}}
+ {{- if eq .chezmoi.osRelease.id "debian" "ubuntu" }}
+{{ include "install_packages/c_cpp/ubuntu_debian" }}
+ {{- end }}
+{{- end }}
+
+{{- end }}

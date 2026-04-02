@@ -1,0 +1,12 @@
+sudo apt update
+sudo apt install -y \
+    git \
+    cmake \
+    build-essential \
+    curl \
+    gettext \
+    luarocks \
+    ripgrep \
+    python3-venv \
+    xclip \
+    wl-clipboard

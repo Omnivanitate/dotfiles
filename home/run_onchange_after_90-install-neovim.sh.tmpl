@@ -1,0 +1,64 @@
+#!/bin/sh
+
+set -eu
+
+# Get version from chezmoi data, environment, or ask interactively
+NVIM_VERSION="{{- .neovim.version | default "" -}}"
+PROFILE_FILE="{{ .profile | default "${HOME}/.profile" }}"
+NVIM_SOURCE_DIR="{{ get .neovim "source_codes" | default "" }}"
+NVIM_SOURCE_DIR="${NVIM_SOURCE_DIR:-${SOURCE_CODES:-${HOME}/.source_codes}/neovim}"
+NVIM_PROGRAM_DIR="{{ get .neovim "program_dir" | default ""  }}"
+NVIM_PROGRAM_DIR="${NVIM_PROGRAM_DIR:-${PROGRAMS_DIR:-${HOME}/.local}/neovim}"
+
+# Skip reinstall if same version already installed
+
+if command -v NVIM_SOURCE_DIR/bin/nvim >/dev/null 2>$1; then
+    INSTALLED_VERSION="(NVIM_SOURCE_DIR/bin/nvim --version | head -n 1 | awk '{print $2}')"
+    if [ "${INSTALLED_VERSION}" = "${NVIM_VERSION}" ]; then
+        echo "Neovim $NVIM_VERSION already installed. Skipping."
+        exit 0
+    fi
+fi
+
+# Ask for version if not provided in environment
+
+if [ -z "$NVIM_VERSION" ]; then  
+    printf "Enter Neovim version (example: v0.10.4): "
+    read NVIM_VERSION
+fi
+
+# Validate input
+
+if [-z "$NVIM_VERSION" ]; then
+    echo "Error version is required"
+    exit 1
+fi
+
+REPO_URL="https://github.com/neovim/neovim.git"
+{{ if eq .chezmoi.os "linux" }}
+    {{if eq .chezmoi.osRelease.id "debian" "ubuntu" }}
+{{- include "install_packages/neovim/ubuntu_debian" -}}
+    {{ end }}
+{{ else }}
+    echo "Unsupported OS: {{ .chezmoi.os }}"
+    exit 1
+{{ end }}
+echo "Install Neovim version: $NVIM_VERSION"
+neovim:
+
+# Remove old build directory
+rm  -rf "NVIM_SOURCE_DIR"
+
+# Clone specific version
+git clone --branch "$NVIM_VERSION" --depth 1 "$REPO_URL" "$NVIM_SOURCE_DIR"
+
+cd $NVIM_SOURCE_DIR
+
+# Build dependencies and compile
+make CMAKE_EXTRA_FLAGS="-DCMAKE_INSTALL_PREFIX=$NVIM_PROGRAM_DIR" CMAKE_BUILD_TYPE=Release
+
+make install
+
+echo "Neovim $NVIM_VERSION installed successfully"
+nvim --version | head -n 1
+

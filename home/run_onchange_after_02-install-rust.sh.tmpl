@@ -1,0 +1,29 @@
+#!/bin/sh
+
+set -eu
+
+{{- if .rust.enable }}
+CARGO_HOME="{{ get .rust "cargo_home" | default "" }}"
+CARGO_HOME="${CARGO_HOME:-${PROGRAMS_DIR:-${HOME}/.local}/cargo}"
+
+RUSTUP_HOME="{{ get .rust "rustup_home" | default "" }}"
+RUSTUP_HOME="${RUSTUP_HOME:-${PROGRAMS_DIR:-${HOME}/.local}/rustup}"
+
+{{ if eq .chezmoi.os "linux" }}
+    {{- if eq .chezmoi.osRelease.id "debian" "ubuntu" }}
+{{- include "install_packages/rust/ubuntu_debian" -}}
+    {{- end }}
+{{- end }}
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+source "${CARGO_HOME}/env"
+{{- end }}
+
+{{ if .c_cpp.enable }}
+# Install c cpp tools
+cargo install neocmakelsp
+{{ end }}
+
+{{ if .neovim.enable }}
+# Install neovim tools
+cargo install --locked tree-sitter-cli
+{{ end }}
