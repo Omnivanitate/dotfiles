@@ -7,3 +7,10 @@ set -eu
 {{ include "install_packages/base/ubuntu_debian" }}
  {{- end }}
 {{- end }}
+
+PROGRAMS_DIR = "{{ get . "programs_dir" | default ""  }}"
+export PROGRAMS_DIR= "${PROGRAMS_DIR:-${HOME}/.local}"
+
+ZSH="${PROGRAMS_DIR}/oh-my-zsh" \
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" \
+"" --unattended --keep-zshrc
