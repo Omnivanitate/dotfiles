@@ -18,3 +18,5 @@ neovim:
   enable: true
   version: "0.12.0"
 
+secrets:
+  enable: true
