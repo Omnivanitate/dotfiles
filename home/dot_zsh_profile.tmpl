@@ -5,8 +5,8 @@ export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 
 SOURCE_CODES="{{ get . "source_codes" | default ""  }}"
 export SOURCE_CODES="${SOURCE_CODES:-${HOME}/.source_codes}"
-PROGRAMS_DIR = "{{ get . "programs_dir" | default ""  }}"
-export PROGRAMS_DIR= "${PROGRAMS_DIR:-${HOME}/.local}"
+PROGRAMS_DIR="{{ get . "programs_dir" | default ""  }}"
+export PROGRAMS_DIR="${PROGRAMS_DIR:-${HOME}/.local}"
 
 export ZSH="${PROGRAMS_DIR}/oh-my-zsh"
 
