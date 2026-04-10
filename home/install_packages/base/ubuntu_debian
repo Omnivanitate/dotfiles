@@ -3,5 +3,4 @@ sudo apt install -y \
     sudo \
     git \
     curl \
-    man-db \
-    zsh
+    man-db 

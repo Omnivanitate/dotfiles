@@ -1,0 +1,22 @@
+{{- if .zsh.enable -}}
+{{- if eq .chezmoi.os "linux" -}}
+#!/bin/sh
+
+set -eu
+
+{{- if eq .chezmoi.osRelease.id "debian" "ubuntu" }}
+{{ include "install_packages/zsh/ubuntu_debian" -}}
+{{- end }}
+
+LOCAL_PROGRAMS_DIR="{{ get . "programs_dir" | default ""  }}"
+LOCAL_PROGRAMS_DIR=${LOCAL_PROGRAMS_DIR:-${HOME}/.local}
+
+ZSH="{{ get .zsh "path" | default "" }}"
+ZSH=${ZSH:-${PROGRAMS_DIR:-${LOCAL_PROGRAMS_DIR}}/oh-my-zsh}
+
+ZSH=${ZSH} \
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" \
+"" --unattended --keep-zshrc
+
+{{- end }}
+{{- end }}
