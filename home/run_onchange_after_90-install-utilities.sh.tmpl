@@ -3,6 +3,11 @@
 
 set -eu
 
+{{- if eq .chezmoi.osRelease.id "debian" "ubuntu" }}
+#Update packages
+sudo apt update
+{{- end }}
+
 {{if .utilities.tmux -}}
 #install tmux
 {{- if eq .chezmoi.osRelease.id "debian" "ubuntu" }}

@@ -4,6 +4,11 @@
 set -eu
 
 {{- if eq .chezmoi.osRelease.id "debian" "ubuntu" }}
+#Update packages
+sudo apt update
+{{- end }}
+
+{{- if eq .chezmoi.osRelease.id "debian" "ubuntu" }}
 {{ include "install_packages/base/ubuntu_debian" -}}
 {{- end }}
 

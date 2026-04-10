@@ -13,6 +13,11 @@ export CARGO_HOME="${CARGO_HOME:-${PROGRAMS_DIR:-${LOCAL_PROGRAMS_DIR}}/cargo}"
 RUSTUP_HOME="{{ get .rust "rustup_home" | default "" }}"
 export RUSTUP_HOME="${RUSTUP_HOME:-${PROGRAMS_DIR:-${LOCAL_PROGRAMS_DIR}}/rustup}"
 
+{{- if eq .chezmoi.osRelease.id "debian" "ubuntu" }}
+#Update packages
+sudo apt update
+{{- end }}
+
 {{if eq .chezmoi.osRelease.id "debian" "ubuntu" }}
 {{- include "install_packages/rust/ubuntu_debian" -}}
 {{- end }}
