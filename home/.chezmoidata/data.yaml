@@ -1,4 +1,5 @@
 profile: ".zsh_profile"
+sources_codes: "${HOME}/.sources_codes"
 
 rust:
   enable: true
