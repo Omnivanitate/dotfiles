@@ -25,7 +25,7 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 cargo install neocmakelsp
 {{- end }}
 
-{{ if .neovim.enable }}
+{{ if .utilities.neovim.enable }}
 # Install neovim tools
 cargo install --locked tree-sitter-cli
 {{- end }}
