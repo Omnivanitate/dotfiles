@@ -12,7 +12,8 @@ rust:
 
 utilities:
   tmux: true
-  zsh: true
+  zsh:
+    enable: true
   neovim:
     enable: true
     version: "0.12.0"

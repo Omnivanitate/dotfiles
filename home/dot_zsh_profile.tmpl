@@ -13,24 +13,27 @@ export ZSH="${PROGRAMS_DIR}/oh-my-zsh"
 export LANG="{{ get . "lang" | default "C.UTF-8" }}"
 export LC_ALL="{{ get . "lc_all" | default "C.UTF-8" }}"
 
-{{ if .zsh.enable }}
+{{ if .utilities.zsh.enable }}
 #zsh
-ZSH_COMPDUMP="{{ get .zsh "compdump" | default "" }}"
+ZSH_COMPDUMP="{{ get .utilities.zsh "compdump" | default "" }}"
 export ZSH_COMPDUMP="${ZSH_COMPDUMP:-${XDG_CACHE_HOME}/zsh/.zcompdump}"
-ZSH_HISTFILE="{{ get .zsh "histfile" | default "" }}"
+ZSH_HISTFILE="{{ get .utilities.zsh "histfile" | default "" }}"
 export HISTFILE="${ZSH_HISTFILE:-${XDG_STATE_HOME}/zsh/history}"
 {{ end }}
 
-{{ if .tmux.enable }}
+{{ if .utilities.tmux }}
 #tmux
 alias tmux="TERM=screen-256color-bce tmux"
 {{ end }}
 
-{{ if .neovim.enable }}
-NVIM_PROGRAM_DIR="{{ get .neovim "program_dir" | default ""  }}"
-NVIM_PROGRAM_DIR="${NVIM_PROGRAM_DIR:-${PROGRAMS_DIR:-${HOME}/.local}/neovim}"
+{{ if .utilities.neovim.enable }}
+
+LOCAL_PROGRAMS_DIR="{{ get . "programs_dir" | default ""  }}"
+LOCAL_PROGRAMS_DIR=${LOCAL_PROGRAMS_DIR:-${HOME}/.local}
+NVIM_PROGRAM_DIR="{{ get .utilities.neovim "program_dir" | default ""  }}"
+NVIM_PROGRAM_DIR="${NVIM_PROGRAM_DIR:-${LOCAL_PROGRAMS_DIR}/neovim}"
+
 export PATH="${NVIM_PROGRAM_DIR}/bin:${PATH}" 
-# alias nvim="${NVIM_PROGRAM_DIR}/bin/nvim"
 #chezmoi
 export EDITOR="${NVIM_PROGRAM_DIR}/bin/nvim"
 {{ end }}

@@ -20,7 +20,7 @@ export RUSTUP_HOME="${RUSTUP_HOME:-${PROGRAMS_DIR:-${LOCAL_PROGRAMS_DIR}}/rustup
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 . "${CARGO_HOME}/env"
 
-{{ if (and .c_cpp.enable .c_cpp.development .neovim.enable) }}
+{{ if (and .c_cpp.enable .c_cpp.development .utilities.neovim.enable) }}
 # Install c cpp neovim tools
 cargo install neocmakelsp
 {{- end }}
