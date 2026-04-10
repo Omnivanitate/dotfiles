@@ -1,29 +1,34 @@
+{{- if .rust.enable -}}
+{{- if eq .chezmoi.os "linux" -}}
 #!/bin/sh
 
 set -eu
 
-{{- if .rust.enable }}
+LOCAL_PROGRAMS_DIR="{{ get . "programs_dir" | default "" }}"
+LOCAL_PROGRAMS_DIR=${LOCAL_PROGRAMS_DIR:-${HOME}/.local}
+
 CARGO_HOME="{{ get .rust "cargo_home" | default "" }}"
-CARGO_HOME="${CARGO_HOME:-${PROGRAMS_DIR:-${HOME}/.local}/cargo}"
+export CARGO_HOME="${CARGO_HOME:-${PROGRAMS_DIR:-${LOCAL_PROGRAMS_DIR}}/cargo}"
 
 RUSTUP_HOME="{{ get .rust "rustup_home" | default "" }}"
-RUSTUP_HOME="${RUSTUP_HOME:-${PROGRAMS_DIR:-${HOME}/.local}/rustup}"
+export RUSTUP_HOME="${RUSTUP_HOME:-${PROGRAMS_DIR:-${LOCAL_PROGRAMS_DIR}}/rustup}"
 
-{{ if eq .chezmoi.os "linux" }}
-    {{- if eq .chezmoi.osRelease.id "debian" "ubuntu" }}
+{{if eq .chezmoi.osRelease.id "debian" "ubuntu" }}
 {{- include "install_packages/rust/ubuntu_debian" -}}
-    {{- end }}
-{{- end }}
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-source "${CARGO_HOME}/env"
 {{- end }}
 
-{{ if .c_cpp.enable }}
-# Install c cpp tools
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+. "${CARGO_HOME}/env"
+
+{{ if (and .c_cpp.enable .c_cpp.development .neovim.enable) }}
+# Install c cpp neovim tools
 cargo install neocmakelsp
-{{ end }}
+{{- end }}
 
 {{ if .neovim.enable }}
 # Install neovim tools
 cargo install --locked tree-sitter-cli
-{{ end }}
+{{- end }}
+
+{{- end }}
+{{- end }}
