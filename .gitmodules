@@ -1,3 +1,0 @@
-[submodule "home/specific"]
-	path = home/external_specific
-	url = https://github.com/Omnivanitate/subdotfiles.git
