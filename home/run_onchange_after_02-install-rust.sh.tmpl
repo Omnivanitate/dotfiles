@@ -22,7 +22,7 @@ sudo apt update
 {{- include "install_packages/rust/ubuntu_debian" -}}
 {{- end }}
 
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
 . "${CARGO_HOME}/env"
 
 {{ if (and .c_cpp.enable .c_cpp.development .utilities.neovim.enable) }}
