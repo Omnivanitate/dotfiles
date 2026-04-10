@@ -13,7 +13,7 @@ set -eu
 LOCAL_PROGRAMS_DIR="{{ get . "programs_dir" | default ""  }}"
 LOCAL_PROGRAMS_DIR=${PROGRAMS_DIR:-${LOCAL_PROGRAMS_DIR:-${HOME}/.local}}
 
-{{- if .utilities.tmux -}}
+{{- if .utilities.tmux }}
 #install zsh 
 {{- if eq .chezmoi.osRelease.id "debian" "ubuntu" }}
 {{ include "install_packages/zsh/ubuntu_debian" -}}
@@ -29,8 +29,7 @@ sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/too
 sudo chsh -s $(which zsh) $USER
 {{- end }}
 
-{{- if .utilities.neovim.enable -}}
-
+{{ if .utilities.neovim.enable }}
 # Get version from chezmoi data, environment, or ask interactively
 NVIM_VERSION="{{- .utilities.neovim.version | default "" -}}"
 PROFILE_FILE="{{ .profile | default "${HOME}/.profile" }}"
@@ -71,9 +70,9 @@ fi
 
 REPO_URL="https://github.com/neovim/neovim.git"
 {{ if eq .chezmoi.os "linux" }}
-    {{if eq .chezmoi.osRelease.id "debian" "ubuntu" }}
+{{if eq .chezmoi.osRelease.id "debian" "ubuntu" -}}
 {{- include "install_packages/neovim/ubuntu_debian" -}}
-    {{ end }}
+{{- end }}
 {{ else }}
     echo "Unsupported OS: {{ .chezmoi.os }}";
     exit 1;
