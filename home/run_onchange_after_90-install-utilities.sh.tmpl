@@ -25,13 +25,25 @@ LOCAL_PROGRAMS_DIR=${PROGRAMS_DIR:-${LOCAL_PROGRAMS_DIR:-${HOME}/.local}}
 {{- end }}
 
 ZSH="{{ get .utilities.zsh "path" | default "" }}"
-ZSH=${ZSH:-${PROGRAMS_DIR:-${LOCAL_PROGRAMS_DIR}}/oh-my-zsh}
+ZSH=${ZSH:-${LOCAL_PROGRAMS_DIR}/oh-my-zsh}
 
-ZSH=${ZSH} \
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" \
-"" --unattended --keep-zshrc
+if [ -d "${ZSH}" ]; then
+    echo "Oh My Zsh is already installed at: ${ZSH}"
+else
+    echo "Oh My Zsh is not installed. Installing..."
 
+    # Install Oh My Zsh unattended
+    ZSH=${ZSH} \
+        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" \
+        "" --unattended --keep-zshrc
+
+    echo "Installation oh-my-zsh completed."
+fi
+
+USER={{ .chezmoi.username }}
 sudo chsh -s $(which zsh) $USER
+
+
 {{- end }}
 
 {{ if .utilities.neovim.enable }}
@@ -43,21 +55,14 @@ LOCAL_SOURCES_CODES="{{ get . "sources_codes" | default ""  }}"
 LOCAL_SOURCES_CODES=${LOCAL_SOURCES_CODES:-${HOME}/.sources_codes}
 
 NVIM_SOURCE_DIR="{{ get .utilities.neovim "source_codes" | default "" }}"
-NVIM_SOURCE_DIR="${NVIM_SOURCE_DIR:-${SOURCES_CODES:-${LOCAL_SOURCES_CODES}/neovim}"
-NVIM_PROGRAM_DIR="{{ get .utilities.neovim "program_dir" | default ""  }}"
+NVIM_SOURCE_DIR="${NVIM_SOURCE_DIR:-${SOURCES_CODES:-${LOCAL_SOURCES_CODES}/neovim}}"
+
+NVIM_PROGRAM_DIR="{{ get .utilities.neovim "program_dir" | default "" }}"
 NVIM_PROGRAM_DIR="${NVIM_PROGRAM_DIR:-${LOCAL_PROGRAMS_DIR}/neovim}"
 
 echo "Neovim source directory: ${NVIM_SOURCE_DIR}"
 echo "Neovim program directory: ${NVIM_PROGRAM_DIR}"
-
-# Skip reinstall if same version already installed
-if command -v ${NVIM_PROGRAM_DIR}/bin/nvim >/dev/null 2>&1; then
-    INSTALLED_VERSION="(${NVIM_PROGRAM_DIR}/bin/nvim --version | head -n 1 | awk '{print \$2}')"; 
-    if [ "${INSTALLED_VERSION}" = "${NVIM_VERSION}" ]; then
-        echo "Neovim ${NVIM_VERSION} already installed. Skipping.";
-        exit 0
-    fi
-fi
+echo "Neovim version: v${NVIM_VERSION}"
 
 # Ask for version if not provided in environment
 
@@ -73,7 +78,19 @@ if [-z "${NVIM_VERSION}" ]; then
     exit 1
 fi
 
+# Skip reinstall if same version already installed
+if command -v ${NVIM_PROGRAM_DIR}/bin/nvim >/dev/null 2>&1; then
+    INSTALLED_VERSION="$(${NVIM_PROGRAM_DIR}/bin/nvim --version | head -n 1 | awk '{print $2}')"; 
+    echo "Installed neovim versiobn: ${INSTALLED_VERSION}"
+    if [ "${INSTALLED_VERSION}" = "v${NVIM_VERSION}" ]; then
+        echo "Neovim v${NVIM_VERSION} already installed. Skipping.";
+        nvim --version | head -n 1
+        exit 0
+    fi
+fi
+
 REPO_URL="https://github.com/neovim/neovim.git"
+
 {{ if eq .chezmoi.os "linux" }}
 {{if eq .chezmoi.osRelease.id "debian" "ubuntu" -}}
 {{- include "install_packages/neovim/ubuntu_debian" -}}
@@ -88,7 +105,7 @@ echo "Install Neovim version: ${NVIM_VERSION}"
 rm  -rf ${NVIM_SOURCE_DIR}
 
 # Clone specific version
-git clone --branch "v${NVIM_VERSION}" --depth 1 "${REPO_URL}" "${NVIM_SOURCE_DIR}"
+git clone --branch "${NVIM_VERSION}" --depth 1 "${REPO_URL}" "${NVIM_SOURCE_DIR}"
 
 cd $NVIM_SOURCE_DIR
 
