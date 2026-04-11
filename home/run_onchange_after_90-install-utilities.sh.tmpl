@@ -40,6 +40,9 @@ else
     echo "Installation oh-my-zsh completed."
 fi
 
+mkdir -p ${ZSH}/custom/plugins/chezmoi
+chezmoi completion zsh > ${ZSH}/custom/plugins/chezmoi/_chezmoi
+
 USER={{ .chezmoi.username }}
 sudo chsh -s $(which zsh) $USER
 
