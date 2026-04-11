@@ -1,3 +1,3 @@
 [submodule "home/external_special"]
-	path = home/external_special
+	path = home/remove_special/external_special
 	url = https://github.com/Omnivanitate/subdotfiles.git
