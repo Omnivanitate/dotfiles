@@ -18,4 +18,10 @@ utilities:
     enable: true
     version: "0.12.0"
 
+gitconfig:
+  email: "serebraykov.vs@gmail.com"
+  name: "Omnivanitate"
+  credential:
+    helper: "cache"
+
 specific: false
