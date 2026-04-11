@@ -1,6 +1,3 @@
 **/install_packages/**
 **/start-shell.sh
-**/special/**
-{{ if not (.specific) -}}
-specific/**
-{{- end }}
+**/README.md
