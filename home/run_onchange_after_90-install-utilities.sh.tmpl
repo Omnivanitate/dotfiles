@@ -24,8 +24,6 @@ LOCAL_PROGRAMS_DIR=${PROGRAMS_DIR:-${LOCAL_PROGRAMS_DIR:-${HOME}/.local}}
 {{ include "install_packages/zsh/ubuntu_debian" -}}
 {{- end }}
 
-mkdir -p ${XDG_STATE_HOME}/zsh
-
 ZSH="{{ get .utilities.zsh "path" | default "" }}"
 ZSH=${ZSH:-${LOCAL_PROGRAMS_DIR}/oh-my-zsh}
 
