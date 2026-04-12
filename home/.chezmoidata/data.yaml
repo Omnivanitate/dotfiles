@@ -24,4 +24,4 @@ gitconfig:
   credential:
     helper: "cache"
 
-specific: false
+special: true

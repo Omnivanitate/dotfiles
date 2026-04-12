@@ -1,0 +1,17 @@
+{{- if .special -}}
+{{- if eq .chezmoi.os "linux" -}}
+#!/bin/sh
+set -eu
+
+echo "Start special pull"
+
+env -C {{ .chezmoi.workingTree }} git submodule update --init --recursive
+
+{{- if .utilities.neovim.enable }}
+env -C "${HOME}/.config/nvim" git submodule update --init --recursive
+{{- end }}
+
+echo "End special pull"
+
+{{- end }}
+{{- end }}
