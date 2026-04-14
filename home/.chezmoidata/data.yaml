@@ -10,6 +10,10 @@ rust:
   cargo_home: "${HOME}/.local/cargo"
   rustup_home: "${HOME}/.local/rustup"
 
+python:
+  enable: true
+  projectManagers: "uv"
+
 utilities:
   tmux: true
   zsh:

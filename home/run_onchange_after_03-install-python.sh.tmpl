@@ -1,0 +1,15 @@
+{{- if .python.enable -}}
+{{- if eq .chezmoi.os "linux" -}}
+#!/bin/sh
+
+{{ if eq .chezmoi.osRelease.id "debian" "ubuntu" -}}
+sudo apt update
+{{- include "install_packages/python/ubuntu_debian" -}}
+{{- end }}
+
+{{- if contains "uv" .python.projectManagers }}
+curl -LsSf https://astral.sh/uv/install.sh | sh
+{{- end }}
+
+{{- end }}
+{{- end }}
