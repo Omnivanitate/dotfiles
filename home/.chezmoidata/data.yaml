@@ -1,5 +1,6 @@
 profile: ".zsh_profile"
 sources_codes: "${HOME}/.sources_codes"
+programs_directory: "${HOME}/.local"
 
 c_cpp:
   enable: true
@@ -12,7 +13,11 @@ rust:
 
 python:
   enable: true
-  projectManagers: "uv"
+  uv:
+    enable: true
+  pyenv:
+    enable: true
+    root: "${HOME}/.local/pyenv"
 
 utilities:
   tmux: true

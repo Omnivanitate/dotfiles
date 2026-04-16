@@ -4,11 +4,28 @@
 
 {{ if eq .chezmoi.osRelease.id "debian" "ubuntu" -}}
 sudo apt update
-{{- include "install_packages/python/ubuntu_debian" -}}
+{{ include "install_packages/python/ubuntu_debian" -}}
 {{- end }}
 
-{{- if contains "uv" .python.projectManagers }}
-curl -LsSf https://astral.sh/uv/install.sh | sh
+{{- if .python.pyenv.enable }}
+if command -v pyenv >/dev/null 2>&1; then
+    echo "pyenv already installed"
+    pyenv --version
+else
+    mkdir -p {{ .python.pyenv.root }}
+    git clone https://github.com/pyenv/pyenv.git {{ .python.pyenv.root }}
+    cd {{ .python.pyenv.root }}
+    cd {{ .python.pyenv.root }} && src/configure && make -C src
+fi
+{{- end }}
+
+{{- if .python.uv.enable }}
+if command -v uv >/dev/null 2>&1; then 
+    echo "uv already installed"
+    uv --version
+else 
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+fi
 {{- end }}
 
 {{- end }}
