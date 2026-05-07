@@ -2,6 +2,9 @@
 	email = {{ .gitconfig.email }}
 	name = {{ .gitconfig.name }}
 
+[init]
+    defaultBranch = main
+
 [credential]
         helper = {{ .gitconfig.credential.helper }}
 
