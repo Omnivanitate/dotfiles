@@ -1,0 +1,82 @@
+{{- $neovim := get . "neovim" | default dict -}}
+{{- if get $neovim "enable" | default false }}
+{{- if eq .chezmoi.os "linux" -}}
+#!/bin/sh
+
+set -eu
+
+{{- if eq .chezmoi.osRelease.id "debian" "ubuntu" }}
+#Update packages
+sudo apt update
+{{- end }}
+
+{{- $default_home_path := "${HOME}" }}
+
+# Get version from chezmoi data, environment, or ask interactively
+NVIM_VERSION={{- get $neovim "version" | default "" | quote }}
+
+PROFILE_FILE={{- get . "profile" | default (joinPath $default_home_path ".profile") | quote }}
+
+{{- $default_sources_codes_dir := get . "sources_codes" | default (joinPath $default_home_path ".sources_codes") }}
+
+NVIM_SOURCE_DIR={{ get .neovim "source_codes" | default (joinPath $default_sources_codes_dir "neovim") | quote }}
+
+{{- $default_programs_dir := get . "programs_directory" | default (joinPath $default_home_path ".local") }}
+
+NVIM_PROGRAM_DIR={{- get .neovim "program_directory" | default (joinPath $default_programs_dir "nvim") | quote }}
+
+echo "Neovim source directory: ${NVIM_SOURCE_DIR}"
+echo "Neovim program directory: ${NVIM_PROGRAM_DIR}"
+echo "Neovim version: v${NVIM_VERSION}"
+
+# Ask for version if not provided in environment
+
+if [ -z "${NVIM_VERSION}" ]; then  
+    printf "Enter Neovim version (example: v0.10.4): "
+    read ${NVIM_VERSION}
+fi
+
+# Validate input
+
+if [-z "${NVIM_VERSION}" ]; then
+    echo "Error version is required"
+    exit 1
+fi
+
+# Skip reinstall if same version already installed
+if command -v ${NVIM_PROGRAM_DIR}/bin/nvim >/dev/null 2>&1; then
+    INSTALLED_VERSION="$(${NVIM_PROGRAM_DIR}/bin/nvim --version | head -n 1 | awk '{print $2}')"
+    echo "Installed neovim versiobn: ${INSTALLED_VERSION}"
+    if [ "${INSTALLED_VERSION}" = "v${NVIM_VERSION}" ]; then
+        echo "Neovim v${NVIM_VERSION} already installed. Skipping."
+        ${NVIM_PROGRAM_DIR}/bin/nvim --version | head -n 1
+        exit 0
+    fi
+fi
+
+REPO_URL="https://github.com/neovim/neovim.git"
+
+{{if eq .chezmoi.osRelease.id "debian" "ubuntu" -}}
+{{- include "install_packages/neovim/ubuntu_debian" -}}
+{{- end }}
+
+echo "Install Neovim version: ${NVIM_VERSION}"
+
+# Remove old build directory
+rm -rf ${NVIM_SOURCE_DIR}
+
+# Clone specific version
+git clone --branch "v${NVIM_VERSION}" --depth 1 "${REPO_URL}" "${NVIM_SOURCE_DIR}"
+
+cd $NVIM_SOURCE_DIR
+
+# Build dependencies and compile
+make CMAKE_EXTRA_FLAGS="-DCMAKE_INSTALL_PREFIX=${NVIM_PROGRAM_DIR}" CMAKE_BUILD_TYPE=Release
+
+make install
+
+echo "Neovim ${NVIM_VERSION} installed successfully"
+${NVIM_PROGRAM_DIR}/bin/nvim --version | head -n 1
+{{- end }}
+
+{{- end }}

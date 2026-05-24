@@ -13,5 +13,9 @@ sudo apt update
 {{ include "install_packages/c_cpp/ubuntu_debian" }}
 {{- end }}
 
+{{- if .c_cpp.development }}
+{{ include "install_packages/c_cpp/ubuntu_debian_development" }}
+{{- end }}
+
 {{- end }}
 {{- end }}

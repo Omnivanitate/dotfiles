@@ -1,0 +1,46 @@
+{{- if .rust.enable -}}
+{{- if eq .chezmoi.os "linux" -}}
+{{- $local_home_dir := "${HOME}" -}}
+{{- $local_programs_directory := get . "programs_directory" | default (joinPath $local_home_dir ".local") -}}
+
+#!/bin/sh
+
+set -eu
+
+{{- if $local_programs_directory }}
+export CARGO_HOME="{{- $local_programs_directory -}}/cargo"
+{{ else }}
+export CARGO_HOME="${HOME}/.local/cargo"
+{{- end }}
+
+{{- if $local_programs_directory }}
+export RUSTUP_HOME_HOME="{{ $local_programs_directory }}/rustup"
+{{ else }}
+export RUSTUP_HOME="${HOME}/.local/rustup"
+{{- end }}
+
+{{- if eq .chezmoi.osRelease.id "debian" "ubuntu" }}
+#Update packages
+sudo apt update
+{{- end }}
+
+{{- if eq .chezmoi.osRelease.id "debian" "ubuntu" }}
+{{- include "install_packages/rust/ubuntu_debian" }}
+{{ end -}}
+
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
+
+{{- if (and .c_cpp.enable .c_cpp.development .neovim.enable) }}
+
+# Install c cpp neovim tools
+cargo install neocmakelsp
+{{- end }}
+
+{{- if .neovim.enable }}
+
+# Install neovim tools
+cargo install --locked tree-sitter-cli
+{{- end }}
+
+{{- end }}
+{{- end }}

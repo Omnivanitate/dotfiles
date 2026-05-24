@@ -1,0 +1,95 @@
+{{- $data := get .chezmoi.config "data" | default dict -}}
+{{- $local_chezmoi_profile := env "CHEZMOI_PROFILE" | default "default" -}}
+
+{{- $local_home_dir := "" -}}
+{{- $local_programs_dir := "" -}}
+{{- $local_sources_codes_dir := "" -}}
+{{- $local_shell := "" -}}
+
+{{- if eq .chezmoi.os "linux" }}
+{{- $local_home_dir = "${HOME}" -}}
+{{- $local_programs_dir = get $data "programs_directory" | default (joinPath $local_home_dir ".local") -}}
+{{- $local_sources_codes_dir = get $data "sources_codes" | default (joinPath $local_home_dir ".soureces_codes") -}}
+
+{{- $zsh := get $data "zsh" | default dict }}
+{{- $enable_zsh := get $zsh "enable" | default (eq $local_chezmoi_profile "full" "default") -}}
+{{- $local_shell := get $data "shell" | default (ternary "zsh" "" $enable_zsh) -}}
+{{- end }}
+# Generated config
+
+[data]
+chezmoi_profile = {{ $local_chezmoi_profile | quote }}
+sources_codes_directory = {{ $local_sources_codes_dir | quote }}
+programs_directory = {{ $local_programs_dir | quote }}
+
+{{- if eq .chezmoi.os "linux" }}
+{{- $shell := get $data "shell" | default "zsh" }}
+shell = {{ $shell | quote }}
+{{- if eq $shell "zsh" }}
+os_user_profile_path = {{ get $data "os_user_profile" | default (joinPath $local_home_dir ".zsh_profile") | quote }}
+{{- else }}
+os_user_profile_path = ""
+{{- end }}
+{{- else }}
+shell = ""
+os_user_profile = ""
+{{- end }}
+special = false
+
+[data.c_cpp]
+{{ $c_cpp := get $data "c_cpp" | default dict -}}
+enable = {{ get $c_cpp "enable" | default (eq $local_chezmoi_profile "full") }}
+development = {{ get $c_cpp "development" | default (eq $local_chezmoi_profile "full") }}
+
+{{- $rust := get $data "rust" | default dict }}
+
+[data.rust]
+{{- $cargo_home := "" -}}
+{{- $rustup_home := "" -}}
+{{- if eq $local_chezmoi_profile "full" }}
+enable = {{ get $rust "enable" | default true }}
+{{ else }}
+enable = {{ get $rust "enable" | default false }}
+{{- end }}
+{{- $local_default_cargo_home := "" -}}
+{{- $local_default_rustup_home := "" -}}
+{{- if $local_programs_dir }}
+{{- $local_default_cargo_home = joinPath $local_programs_dir "cargo" -}}
+{{- $local_default_rustup_home = joinPath $local_programs_dir "rustup" -}}
+{{- end }}
+cargo_home = {{ get $rust "cargo_home" | default $local_default_cargo_home  | quote }}
+rustup_home = {{ get $rust "rustup_home" | default $local_default_rustup_home | quote }}
+
+[data.python]
+{{- $python := get $data "python" | default dict }}
+enable = {{- get $python "enable" | default (eq $local_chezmoi_profile "full") }}
+
+[data.python.pyenv]
+{{- $pyenv := get $python "pyenv" | default dict }}
+enable = {{ get $pyenv "enable" | default (eq $local_chezmoi_profile "full") }}
+program_directory = {{ get $pyenv "program_directory" | default (and $local_programs_dir (joinPath $local_programs_dir "pyenv")) | quote }}
+
+[data.python.uv]
+{{- $uv := get $python "uv" | default dict }}
+enable = {{- get $uv "enable" | default (eq $local_chezmoi_profile "full") }}
+
+[data.gitconfig]
+{{- $gitconfig := get $data "gitconfig" | default dict }}
+email = {{ get $gitconfig "email" | default "" | quote }}
+name = {{ get $gitconfig "name" | default "" | quote }}
+
+[data.gitconfig.credential]
+helper = {{ get (get $gitconfig "credential" | default dict) "helper" | default "cache" | quote }} 
+
+[data.zsh]
+{{- $zsh := get $data "zsh" | default dict }}
+enable = {{ get $zsh "enable" | default (eq $local_chezmoi_profile "full" "default") }}
+
+[data.tmux]
+{{- $tmux := get $data "tmux" | default dict }}
+enable = {{ get $tmux "enable" | default (eq $local_chezmoi_profile "full") }}
+
+[data.neovim]
+{{- $neovim := get $data "neovim" | default dict }}
+enable = {{ get $neovim "enable" | default (eq $local_chezmoi_profile "full" "default") }}
+version = {{ get $neovim "version" | default "0.12.0" | quote -}}

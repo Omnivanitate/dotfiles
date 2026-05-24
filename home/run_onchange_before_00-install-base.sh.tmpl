@@ -1,0 +1,49 @@
+{{ if eq .chezmoi.os "linux" -}}
+{{- $local_home_dir := "${HOME}" -}}
+{{- $local_programs_directory := get . "programs_directory" | default (joinPath $local_home_dir ".local") -}}
+#!/bin/sh
+
+set -eu
+
+{{- if eq .chezmoi.osRelease.id "debian" "ubuntu" }}
+#Update packages
+sudo apt update
+
+{{ include "install_packages/base/ubuntu_debian" }}
+
+{{- if .tmux.enable }}
+#install tmux
+{{ include "install_packages/tmux/ubuntu_debian" -}}
+{{- end }}
+
+{{- if .zsh.enable }}
+#install zsh 
+{{ include "install_packages/zsh/ubuntu_debian" }}
+{{- end }}
+
+{{- end }}
+
+{{- if .zsh.enable }}
+#install oh-my-zsh
+OH_MY_ZSH={{ get .zsh "program_directory" | default (joinPath $local_programs_directory "oh-my-zsh") | quote }}
+
+if [ -d "${OH_MY_ZSH}" ]; then
+    echo "Oh My Zsh is already installed at: ${OH_MY_ZSH}"
+else
+    echo "Oh My Zsh is not installed. Installing..."
+
+    # Install Oh My Zsh unattended
+    OH_MY_ZSH=${OH_MY_ZSH} \
+        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" \
+        "" --unattended --keep-zshrc
+    echo "Installation oh-my-zsh completed."
+fi
+
+mkdir -p ${OH_MY_ZSH}/custom/plugins/chezmoi
+chezmoi completion zsh > ${OH_MY_ZSH}/custom/plugins/chezmoi/_chezmoi
+
+USER={{ .chezmoi.username }}
+sudo chsh -s $(which zsh) $USER
+
+{{- end }}
+{{- end }}
