@@ -27,7 +27,7 @@ alias tmux="TERM=screen-256color-bce tmux"
 {{- end }}
 
 {{ if .neovim.enable -}}
-NVIM_PROGRAM_DIR={{get (get . "neovim" | default dict) "program_directory" | default (joinPath "${PROGRAMS_DIRECTORY}" "neovim") | quote }}
+NVIM_PROGRAM_DIR={{get (get . "neovim" | default dict) "program_directory" | default (joinPath "${PROGRAMS_DIRECTORY}" "nvim") | quote }}
 export PATH="${NVIM_PROGRAM_DIR}/bin:${PATH}" 
 
 #chezmoi
