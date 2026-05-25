@@ -1,5 +1,4 @@
-{{- if .rust.enable -}}
-{{- if eq .chezmoi.os "linux" -}}
+{{- if and .rust.enable (eq .chezmoi.os "linux") -}}
 {{- $local_home_dir := "${HOME}" -}}
 {{- $local_programs_directory := get . "programs_directory" | default (joinPath $local_home_dir ".local") -}}
 
@@ -22,13 +21,14 @@ export RUSTUP_HOME="${HOME}/.local/rustup"
 {{- if eq .chezmoi.osRelease.id "debian" "ubuntu" }}
 #Update packages
 sudo apt update
-{{- end }}
+{{ end }}
 
 {{- if eq .chezmoi.osRelease.id "debian" "ubuntu" }}
 {{- include "install_packages/rust/ubuntu_debian" }}
 {{ end -}}
 
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
+. "${CARGO_HOME}/env"
 
 {{- if (and .c_cpp.enable .c_cpp.development .neovim.enable) }}
 
@@ -42,5 +42,4 @@ cargo install neocmakelsp
 cargo install --locked tree-sitter-cli
 {{- end }}
 
-{{- end }}
 {{- end }}
