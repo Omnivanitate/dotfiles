@@ -28,7 +28,6 @@ sudo apt update
 {{ end -}}
 
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
-. "${CARGO_HOME}/env"
 
 {{- if (and .c_cpp.enable .c_cpp.development .neovim.enable) }}
 

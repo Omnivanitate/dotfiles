@@ -29,6 +29,14 @@ export HISTFILE={{ get (get . "zsh" | default dict) "histfile" | default (joinPa
 alias tmux="TERM=screen-256color-bce tmux"
 {{- end }}
 
+{{ $rust := get . "rust" | default dict -}}
+{{ if get $rust "enable" | default false -}}
+#rust
+{{ if get $rust "cargo_home" -}}
+. {{ joinPath (get $rust "cargo_home") "env" }}
+{{- end }}
+{{- end }}
+
 {{ if .neovim.enable -}}
 NVIM_PROGRAM_DIR={{get (get . "neovim" | default dict) "program_directory" | default (joinPath "${PROGRAMS_DIRECTORY}" "nvim") | quote }}
 export PATH="${NVIM_PROGRAM_DIR}/bin:${PATH}" 
