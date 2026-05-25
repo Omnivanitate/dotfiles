@@ -23,7 +23,7 @@
 chezmoi_profile = {{ $local_chezmoi_profile | quote }}
 sources_codes_directory = {{ $local_sources_codes_dir | quote }}
 programs_directory = {{ $local_programs_dir | quote }}
-configuration_directory {{ $local_config_dir| quote }}
+configuration_directory = {{ $local_config_dir| quote }}
 
 {{- if eq .chezmoi.os "linux" }}
 {{- $shell := get $data "shell" | default "zsh" }}
@@ -95,6 +95,6 @@ enable = {{ get $tmux "enable" | default (eq $local_chezmoi_profile "full") }}
 [data.neovim]
 {{- $neovim := get $data "neovim" | default dict }}
 enable = {{ get $neovim "enable" | default (eq $local_chezmoi_profile "full" "default") }}
-version = {{ get $neovim "version" | default "0.12.0" | quote -}}
-config_repo = {{ get $neovim "config_repo" | default "" | quote -}}
-config_folder = {{ get $neovim "config_folder" | default (joinPath $local_config_dir "nvim") | quote -}}
+version = {{ get $neovim "version" | default "0.12.0" | quote }}
+config_repo = {{ get $neovim "config_repo" | default "" | quote }}
+config_folder = {{ get $neovim "config_folder" | default (joinPath $local_config_dir "nvim") | quote }}
