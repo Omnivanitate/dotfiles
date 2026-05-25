@@ -17,8 +17,10 @@ ZSH_CACHE_DIR={{- get (get . "zsh" | default dict) "cache" | default (joinPath "
 if [[ ! -d "${ZSH_CACHE_DIR}" ]]; then
     mkdir -p "${ZSH_CACHE_DIR}"
 fi
+ZSH_COMPDUMP="${ZSH_CACHE_DIR:-$HOME/.cache/zsh}/zcompdump-${SHORT_HOST}-${ZSH_VERSION}"
 autoload -Uz compinit
-compinit -d "${ZSH_CACHE_DIR}/.zcompdump"
+compinit -d "${ZSH_COMPDUMP}"
+
 export HISTFILE={{ get (get . "zsh" | default dict) "histfile" | default (joinPath "$ZSH_CACHE_DIR" "history") | quote }}
 {{- end }}
 
