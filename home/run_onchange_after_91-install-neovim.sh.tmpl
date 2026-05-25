@@ -77,6 +77,14 @@ make install
 
 echo "Neovim ${NVIM_VERSION} installed successfully"
 ${NVIM_PROGRAM_DIR}/bin/nvim --version | head -n 1
+
+{{ $config_repo := get $neovim "config_repo" | default "" -}}
+{{ if $config_repo -}}
+{{- $home_directory := get . "home_directory" | default "${HOME}" -}}
+{{- $configuration_directory := get . "configuration_directory" | default (joinPath $home_directory ".config") -}}
+{{ $neovim_config_folder := get $neovim "config_folder" | default (joinPath $configuration_directory "nvim") }}
+git clone {{ $config_repo | quote }} {{ $neovim_config_folder | quote }}
 {{- end }}
 
+{{- end }}
 {{- end }}
