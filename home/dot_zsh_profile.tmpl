@@ -13,11 +13,14 @@ export LC_ALL="{{ get . "lc_all" | default "C.UTF-8" }}"
 
 {{ if .zsh.enable -}}
 #zsh
-ZSH_CACHE_DIR={{- get (get . "zsh" | default dict) "cache" | default (joinPath "${XDG_CONFIG_HOME}" "zsh") | quote }}
+ZSH_CACHE_DIR={{- get (get . "zsh" | default dict) "cache" | default (joinPath "${XDG_CACHE_HOME}" "zsh") | quote }}
 if [[ ! -d "${ZSH_CACHE_DIR}" ]]; then
     mkdir -p "${ZSH_CACHE_DIR}"
 fi
-export ZSH_COMPDUMP={{ get ( get . "zsh" | default dict) "compdump" | default (joinPath "${ZSH_CACHE_DIR}" ".zcompdump") | quote }}
+ZSH_COMPDUMP="${ZSH_CACHE_DIR:-$HOME/.cache/zsh}/zcompdump-${SHORT_HOST}-${ZSH_VERSION}"
+autoload -Uz compinit
+compinit -d "${ZSH_COMPDUMP}"
+
 export HISTFILE={{ get (get . "zsh" | default dict) "histfile" | default (joinPath "$ZSH_CACHE_DIR" "history") | quote }}
 {{- end }}
 
@@ -27,7 +30,7 @@ alias tmux="TERM=screen-256color-bce tmux"
 {{- end }}
 
 {{ if .neovim.enable -}}
-NVIM_PROGRAM_DIR={{get (get . "neovim" | default dict) "program_directory" | default (joinPath "${PROGRAMS_DIRECTORY}" "neovim") | quote }}
+NVIM_PROGRAM_DIR={{get (get . "neovim" | default dict) "program_directory" | default (joinPath "${PROGRAMS_DIRECTORY}" "nvim") | quote }}
 export PATH="${NVIM_PROGRAM_DIR}/bin:${PATH}" 
 
 #chezmoi
