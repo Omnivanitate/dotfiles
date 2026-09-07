@@ -8,13 +8,9 @@ set -eu
 
 {{- if $local_programs_directory }}
 export CARGO_HOME="{{- $local_programs_directory -}}/cargo"
+export RUSTUP_HOME="{{ $local_programs_directory }}/rustup"
 {{ else }}
 export CARGO_HOME="${HOME}/.local/cargo"
-{{- end }}
-
-{{- if $local_programs_directory }}
-export RUSTUP_HOME_HOME="{{ $local_programs_directory }}/rustup"
-{{ else }}
 export RUSTUP_HOME="${HOME}/.local/rustup"
 {{- end }}
 
