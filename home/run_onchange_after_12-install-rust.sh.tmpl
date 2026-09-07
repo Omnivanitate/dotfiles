@@ -13,7 +13,7 @@ export RUSTUP_HOME="{{ $programs_directory }}/rustup"
 # Update packages
 sudo apt update
 
-{{- include "install_packages/rust/ubuntu_debian" }}
+{{ include "install_packages/rust/ubuntu_debian" }}
 
 {{- end }}
 
