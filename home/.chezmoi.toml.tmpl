@@ -98,3 +98,14 @@ enable = {{ get $neovim "enable" | default (eq $local_chezmoi_profile "full" "de
 version = {{ get $neovim "version" | default "0.12.0" | quote }}
 config_repo = {{ get $neovim "config_repo" | default "" | quote }}
 config_folder = {{ get $neovim "config_folder" | default (joinPath $local_config_dir "nvim") | quote }}
+
+[data.ai]
+{{- $ai := get $ai "ai" | default dict }}
+enable = {{ get $ai "enable" | default (eq $local_chezmoi_profile "full" "default") }}
+{{- $local_default_opendcode := "" -}}
+{{- if $local_programs_dir }}
+{{- $local_default_opencode = joinPath $local_programs_dir "opencode" -}}
+{{- end }}
+opencode_home = {{ get $ai "opencode_home" | default $local_default_opendcode | quote }}
+
+
