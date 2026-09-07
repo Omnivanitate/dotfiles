@@ -1,138 +1,163 @@
-# If you come from bash you might have to change your $PATH.
-# export PATH=$HOME/bin:/usr/local/bin:$PATH
+{{- /*
+--------------------------------------------------------------------------
+Derived configuration
+--------------------------------------------------------------------------
+*/ -}}
 
-# Path to your oh-my-zsh installation.
-export ZSH="$HOME/.local/oh-my-zsh"
+{{- $programs_directory := get . "programs_directory" | default (joinPath "${HOME}" ".local") -}}
+{{- $sources_codes := get . "sources_codes" | default (joinPath "${HOME}" ".sources_codes") -}}
 
-# Set name of the theme to load --- if set to "random", it will
-# load a random theme each time oh-my-zsh is loaded, in which case,
-# to know which specific one was loaded, run: echo $RANDOM_THEME
-# See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
-ZSH_THEME="murilasso"
+{{- $zsh := get . "zsh" | default dict -}}
+{{- $zsh_cache_dir := get $zsh "cache" | default (joinPath "${XDG_CACHE_HOME}" "zsh") -}}
+{{- $zsh_histfile := get $zsh "histfile" | default (joinPath "$ZSH_CACHE_DIR" "history") -}}
 
-# Set list of themes to pick from when loading at random
-# Setting this variable when ZSH_THEME=random will cause zsh to load
-# a theme from this variable instead of looking in $ZSH/themes/
-# If set to an empty array, this variable will have no effect.
-# ZSH_THEME_RANDOM_CANDIDATES=( "robbyrussell" "agnoster" )
+{{- $rust := get . "rust" | default dict -}}
+{{- $neovim := get . "neovim" | default dict -}}
+{{- $python := get . "python" | default dict -}}
 
-# Uncomment the following line to use case-sensitive completion.
-# CASE_SENSITIVE="true"
+{{- $lang := get . "lang" | default "C.UTF-8" -}}
+{{- $lc_all := get . "lc_all" | default "C.UTF-8" -}}
 
-# Uncomment the following line to use hyphen-insensitive completion.
-# Case-sensitive completion must be off. _ and - will be interchangeable.
-# HYPHEN_INSENSITIVE="true"
+# -----------------------------------------------------------------------------
 
-# Uncomment one of the following lines to change the auto-update behavior
-# zstyle ':omz:update' mode disabled  # disable automatic updates
-# zstyle ':omz:update' mode auto      # update automatically without asking
-# zstyle ':omz:update' mode reminder  # just remind me to update when it's time
+# Environment
 
-# Uncomment the following line to change how often to auto-update (in days).
-# zstyle ':omz:update' frequency 13
-
-# Uncomment the following line if pasting URLs and other text is messed up.
-# DISABLE_MAGIC_FUNCTIONS="true"
-
-# Uncomment the following line to disable colors in ls.
-# DISABLE_LS_COLORS="true"
-
-# Uncomment the following line to disable auto-setting terminal title.
-# DISABLE_AUTO_TITLE="true"
-
-# Uncomment the following line to enable command auto-correction.
-# ENABLE_CORRECTION="true"
-
-# Uncomment the following line to display red dots whilst waiting for completion.
-# You can also set it to another string to have that shown instead of the default red dots.
-# e.g. COMPLETION_WAITING_DOTS="%F{yellow}waiting...%f"
-# Caution: this setting can cause issues with multiline prompts in zsh < 5.7.1 (see #5765)
-COMPLETION_WAITING_DOTS="true"
-
-# Uncomment the following line if you want to disable marking untracked files
-# under VCS as dirty. This makes repository status check for large repositories
-# much, much faster.
-DISABLE_UNTRACKED_FILES_DIRTY="true"
-
-# Uncomment the following line if you want to change the command execution time
-# stamp shown in the history command output.
-# You can set one of the optional three formats:
-# "mm/dd/yyyy"|"dd.mm.yyyy"|"yyyy-mm-dd"
-# or set a custom format using the strftime function format specifications,
-# see 'man strftime' for details.
-# HIST_STAMPS="mm/dd/yyyy"
-
-# Would you like to use another custom folder than $ZSH/custom?
-# ZSH_CUSTOM=/path/to/new-custom-folder
-
-# Which plugins would you like to load?
-# Standard plugins can be found in $ZSH/plugins/
-# Custom plugins may be added to $ZSH_CUSTOM/plugins/
-# Example format: plugins=(rails git textmate ruby lighthouse)
-# Add wisely, as too many plugins slow down shell startup.
-plugins=(
-    git 
-    chezmoi
-{{- if .tmux }}
-    tmux
-{{- end }}
-)
+# -----------------------------------------------------------------------------
 
 export XDG_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}"
 export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 
-export SOURCES_CODES={{- get . "sources_codes" | default (joinPath "${HOME}" ".sources_codes") | quote }}
-export PROGRAMS_DIRECTORY={{- get . "programs_directory" | default (joinPath "${HOME}" ".local") | quote }}
+export SOURCES_CODES={{ $sources_codes | quote }}
+export PROGRAMS_DIRECTORY={{ $programs_directory | quote }}
 
-export ZSH={{- joinPath "${PROGRAMS_DIRECTORY}" "oh-my-zsh" | quote }}
+export LANG={{ $lang | quote }}
+export LC_ALL={{ $lc_all | quote }}
 
-export LANG="{{ get . "lang" | default "C.UTF-8" }}"
-export LC_ALL="{{ get . "lc_all" | default "C.UTF-8" }}"
+# -----------------------------------------------------------------------------
 
-{{ if .zsh.enable -}}
-#zsh
-ZSH_CACHE_DIR={{- get (get . "zsh" | default dict) "cache" | default (joinPath "${XDG_CACHE_HOME}" "zsh") | quote }}
+# Oh My Zsh
+
+# -----------------------------------------------------------------------------
+
+export ZSH={{ joinPath "${PROGRAMS_DIRECTORY}" "oh-my-zsh" | quote }}
+
+ZSH_THEME="murilasso"
+
+plugins=(
+git
+chezmoi
+{{- if .tmux.enable }}
+tmux
+{{- end }}
+)
+
+COMPLETION_WAITING_DOTS="true"
+DISABLE_UNTRACKED_FILES_DIRTY="true"
+
+# -----------------------------------------------------------------------------
+
+# Zsh
+
+# -----------------------------------------------------------------------------
+
+{{- if get $zsh "enable" | default false }}
+
+ZSH_CACHE_DIR={{ $zsh_cache_dir | quote }}
+
 if [[ ! -d "${ZSH_CACHE_DIR}" ]]; then
-    mkdir -p "${ZSH_CACHE_DIR}"
+mkdir -p "${ZSH_CACHE_DIR}"
 fi
-ZSH_COMPDUMP="${ZSH_CACHE_DIR:-$HOME/.cache/zsh}/zcompdump-${SHORT_HOST}-${ZSH_VERSION}"
+
+ZSH_COMPDUMP="${ZSH_CACHE_DIR}/zcompdump-${SHORT_HOST}-${ZSH_VERSION}"
+
 autoload -Uz compinit
 compinit -d "${ZSH_COMPDUMP}"
 
-export HISTFILE={{ get (get . "zsh" | default dict) "histfile" | default (joinPath "$ZSH_CACHE_DIR" "history") | quote }}
+export HISTFILE={{ $zsh_histfile | quote }}
+
 {{- end }}
 
-{{ if .tmux.enable -}}
-#tmux
+# -----------------------------------------------------------------------------
+
+# tmux
+
+# -----------------------------------------------------------------------------
+
+{{- if .tmux.enable }}
+
 alias tmux="TERM=screen-256color-bce tmux"
+
 {{- end }}
 
-{{ $rust := get . "rust" | default dict -}}
-{{ if get $rust "enable" | default false -}}
-#rust
-{{ if get $rust "cargo_home" -}}
-. {{ joinPath (get $rust "cargo_home") "env" }}
+# -----------------------------------------------------------------------------
+
+# Rust
+
+# -----------------------------------------------------------------------------
+
+{{- if get $rust "enable" | default false }}
+
+{{- $cargo_home := get $rust "cargo_home" -}}
+{{- if $cargo_home }}
+
+. {{ joinPath $cargo_home "env" }}
+export CARGO_HOME="{{ get . "programs_directory" | default (joinPath .chezmoi.homeDir ".local") }}/cargo"
+export RUSTUP_HOME="{{ get . "programs_directory" | default (joinPath .chezmoi.homeDir ".local") }}/rustup"
+
+
 {{- end }}
 {{- end }}
 
-{{ if .neovim.enable -}}
-NVIM_PROGRAM_DIR={{get (get . "neovim" | default dict) "program_directory" | default (joinPath "${PROGRAMS_DIRECTORY}" "nvim") | quote }}
-export PATH="${NVIM_PROGRAM_DIR}/bin:${PATH}" 
+# -----------------------------------------------------------------------------
 
-#chezmoi
+# Neovim
+
+# -----------------------------------------------------------------------------
+
+{{- if .neovim.enable }}
+
+{{- $nvim_program_dir := get $neovim "program_directory" | default (joinPath "${PROGRAMS_DIRECTORY}" "nvim") -}}
+
+export NVIM_PROGRAM_DIR={{ $nvim_program_dir | quote }}
+export PATH="${NVIM_PROGRAM_DIR}/bin:${PATH}"
+
 export EDITOR="${NVIM_PROGRAM_DIR}/bin/nvim"
+
 {{- end }}
 
-{{if and .python.enable .python.pyenv.enable -}}
-PYENV_ROOT={{ .python.pyenv.program_directory }}
-export PYENV_ROOT=${PYENV_ROOT:-${HOME}/.local/pyenv}
+# -----------------------------------------------------------------------------
+
+# Python
+
+# -----------------------------------------------------------------------------
+
+{{- $pyenv := get $python "pyenv" | default dict -}}
+{{- if and (.python.enable | default false) (get $pyenv "enable" | default false) }}
+
+export PYENV_ROOT={{ get $pyenv "program_directory" | default (joinPath "${PROGRAMS_DIRECTORY}" "pyenv") | quote }}
 export PATH="${PYENV_ROOT}/bin:${PATH}"
+
 eval "$(pyenv init -)"
+
 {{- end }}
 
-if [[ -f $HOME/.zsh_profile ]]; then
-    source $HOME/.zsh_profile
+# -----------------------------------------------------------------------------
+
+# User profile
+
+# -----------------------------------------------------------------------------
+
+if [[ -f "${HOME}/.zsh_profile" ]]; then
+source "${HOME}/.zsh_profile"
 fi
-source $ZSH/oh-my-zsh.sh
+
+# -----------------------------------------------------------------------------
+
+# Oh My Zsh initialization
+
+# -----------------------------------------------------------------------------
+
+source "${ZSH}/oh-my-zsh.sh"
+
