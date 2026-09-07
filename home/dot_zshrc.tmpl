@@ -118,7 +118,7 @@ export RUSTUP_HOME="{{ get . "programs_directory" | default (joinPath .chezmoi.h
 
 {{- if .neovim.enable }}
 
-{{- $nvim_program_dir := get $neovim "program_directory" | default (joinPath "${PROGRAMS_DIRECTORY}" "nvim") -}}
+{{ $nvim_program_dir := get $neovim "program_directory" | default (joinPath "${PROGRAMS_DIRECTORY}" "nvim") -}}
 
 export NVIM_PROGRAM_DIR={{ $nvim_program_dir | quote }}
 export PATH="${NVIM_PROGRAM_DIR}/bin:${PATH}"
