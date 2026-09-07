@@ -1,6 +1,6 @@
-{{- $neovim := get . "ai" | default dict -}}
-{{- if get $ai "enable" | default false }}
-{{- if eq .chezmoi.os "linux" -}}
+{{- if and .ai.enable (eq .chezmoi.os "linux") -}}
+{{- $local_home_dir := "${HOME}" -}}
+{{- $local_programs_directory := get . "programs_directory" | default (joinPath $local_home_dir ".local") -}}
 #!/usr/bin/env bash
 
 set -eu
@@ -16,7 +16,8 @@ export OPENCODE_HOME="${HOME}/.local/opencode"
 sudo apt update
 {{ end }}
 
-curl -fsSL https://opencode.ai/install | bash -s -- --install-dir "${OPENCODE_HOME}"
+curl -fsSL https://opencode.ai/install |                                                                                                                                                                
+    sed "s|INSTALL_DIR=\$HOME/.opencode/bin|INSTALL_DIR=\$HOME/.local/bin|" |
+    bash -s -- --no-modify-path
 
-{{- end }}
 {{- end }}
