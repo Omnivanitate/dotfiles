@@ -1,11 +1,11 @@
 {{- /*
---------------------------------------------------------------------------
+-------------------------------------------------------------------------
 Derived configuration
---------------------------------------------------------------------------
+-------------------------------------------------------------------------
 */ -}}
 
 {{- $programs_directory := get . "programs_directory" | default (joinPath "${HOME}" ".local") -}}
-{{- $sources_codes := get . "sources_codes" | default (joinPath "${HOME}" ".sources_codes") -}}
+{{- $sources_codes_directory := get . "sources_codes_directory" | default (joinPath "${HOME}" ".sources_codes") -}}
 
 {{- $zsh := get . "zsh" | default dict -}}
 {{- $zsh_cache_dir := get $zsh "cache" | default (joinPath "${XDG_CACHE_HOME}" "zsh") -}}
@@ -14,6 +14,8 @@ Derived configuration
 {{- $rust := get . "rust" | default dict -}}
 {{- $neovim := get . "neovim" | default dict -}}
 {{- $python := get . "python" | default dict -}}
+{{- $ai := get . "ai" | default dict -}}
+{{- $tmux := get . "tmux" | default dict -}}
 
 {{- $lang := get . "lang" | default "C.UTF-8" -}}
 {{- $lc_all := get . "lc_all" | default "C.UTF-8" -}}
@@ -29,7 +31,7 @@ export XDG_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 export XDG_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
 export XDG_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
 
-export SOURCES_CODES={{ $sources_codes | quote }}
+export SOURCES_CODES={{ $sources_codes_directory | quote }}
 export PROGRAMS_DIRECTORY={{ $programs_directory | quote }}
 
 export LANG={{ $lang | quote }}
@@ -41,20 +43,24 @@ export LC_ALL={{ $lc_all | quote }}
 
 # -----------------------------------------------------------------------------
 
-export ZSH={{ joinPath "${PROGRAMS_DIRECTORY}" "oh-my-zsh" | quote }}
+{{- if get $zsh "enable" | default false }}
+
+export ZSH={{ get $zsh "program_directory" | default (joinPath "${PROGRAMS_DIRECTORY}" "oh-my-zsh") | quote }}
 
 ZSH_THEME="murilasso"
 
 plugins=(
 git
 chezmoi
-{{- if .tmux.enable }}
+{{- if get $tmux "enable" | default false }}
 tmux
 {{- end }}
 )
 
 COMPLETION_WAITING_DOTS="true"
 DISABLE_UNTRACKED_FILES_DIRTY="true"
+
+{{- end }}
 
 # -----------------------------------------------------------------------------
 
@@ -85,7 +91,7 @@ export HISTFILE={{ $zsh_histfile | quote }}
 
 # -----------------------------------------------------------------------------
 
-{{- if .tmux.enable }}
+{{- if get $tmux "enable" | default false }}
 
 alias tmux="TERM=screen-256color-bce tmux"
 
@@ -100,12 +106,23 @@ alias tmux="TERM=screen-256color-bce tmux"
 {{- if get $rust "enable" | default false }}
 
 {{- $cargo_home := get $rust "cargo_home" -}}
+{{- $rustup_home := get $rust "rustup_home" -}}
+
 {{- if $cargo_home }}
 
-. {{ joinPath $cargo_home "env" }}
-export CARGO_HOME="{{ get . "programs_directory" | default (joinPath .chezmoi.homeDir ".local") }}/cargo"
-export RUSTUP_HOME="{{ get . "programs_directory" | default (joinPath .chezmoi.homeDir ".local") }}/rustup"
+export CARGO_HOME={{ $cargo_home | quote }}
 
+{{- end }}
+{{- if $rustup_home }}
+
+export RUSTUP_HOME={{ $rustup_home | quote }}
+
+{{- end }}
+{{- if $cargo_home }}
+
+if [ -f "${CARGO_HOME}/env" ]; then
+    . "${CARGO_HOME}/env"
+fi
 
 {{- end }}
 {{- end }}
@@ -116,7 +133,7 @@ export RUSTUP_HOME="{{ get . "programs_directory" | default (joinPath .chezmoi.h
 
 # -----------------------------------------------------------------------------
 
-{{- if .neovim.enable }}
+{{- if get $neovim "enable" | default false }}
 
 {{ $nvim_program_dir := get $neovim "program_directory" | default (joinPath "${PROGRAMS_DIRECTORY}" "nvim") -}}
 
@@ -134,7 +151,7 @@ export EDITOR="${NVIM_PROGRAM_DIR}/bin/nvim"
 # -----------------------------------------------------------------------------
 
 {{- $pyenv := get $python "pyenv" | default dict -}}
-{{- if and (.python.enable | default false) (get $pyenv "enable" | default false) }}
+{{- if and (get $python "enable" | default false) (get $pyenv "enable" | default false) }}
 
 export PYENV_ROOT={{ get $pyenv "program_directory" | default (joinPath "${PROGRAMS_DIRECTORY}" "pyenv") | quote }}
 export PATH="${PYENV_ROOT}/bin:${PATH}"
@@ -149,9 +166,14 @@ eval "$(pyenv init -)"
 
 # -----------------------------------------------------------------------------
 
-if [[ -f "${HOME}/.zsh_profile" ]]; then
-source "${HOME}/.zsh_profile"
+{{- $user_profile_path := get . "os_user_profile_path" -}}
+{{- if $user_profile_path }}
+
+if [[ -f {{ $user_profile_path | quote }} ]]; then
+    source {{ $user_profile_path | quote }}
 fi
+
+{{- end }}
 
 # -----------------------------------------------------------------------------
 
@@ -159,5 +181,27 @@ fi
 
 # -----------------------------------------------------------------------------
 
-source "${ZSH}/oh-my-zsh.sh"
+{{- if get $zsh "enable" | default false }}
 
+if [[ -f "${ZSH}/oh-my-zsh.sh" ]]; then
+    source "${ZSH}/oh-my-zsh.sh"
+fi
+
+{{- end }}
+
+# -----------------------------------------------------------------------------
+
+# OpenCode
+
+# -----------------------------------------------------------------------------
+
+{{- if get $ai "enable" | default false }}
+
+export PATH="{{ get $ai "opencode_home" | default (joinPath "${PROGRAMS_DIRECTORY}" "opencode") }}/bin:${PATH}"
+alias oc="opencode"
+
+if command -v opencode >/dev/null 2>&1; then
+    eval "$(opencode --completions zsh 2>/dev/null)"
+fi
+
+{{- end }}
