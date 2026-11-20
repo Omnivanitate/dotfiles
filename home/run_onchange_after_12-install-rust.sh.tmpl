@@ -1,12 +1,15 @@
-{{- if and .rust.enable (eq .chezmoi.os "linux") -}}
+{{- $rust := get . "rust" | default dict -}}
+{{- if and (get $rust "enable" | default (eq .chezmoi_profile "full")) (eq .chezmoi.os "linux") -}}
 {{- $programs_directory := get . "programs_directory" | default (joinPath .chezmoi.homeDir ".local") -}}
+{{- $cargo_home := get $rust "cargo_home" | default (joinPath $programs_directory "cargo") -}}
+{{- $rustup_home := get $rust "rustup_home" | default (joinPath $programs_directory "rustup") -}}
 
 #!/bin/sh
 
 set -eu
 
-export CARGO_HOME="{{ $programs_directory }}/cargo"
-export RUSTUP_HOME="{{ $programs_directory }}/rustup"
+export CARGO_HOME={{ $cargo_home | quote }}
+export RUSTUP_HOME={{ $rustup_home | quote }}
 
 {{- if or (eq .chezmoi.osRelease.id "debian") (eq .chezmoi.osRelease.id "ubuntu") }}
 
@@ -22,17 +25,23 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
 
 . "${CARGO_HOME}/env"
 
-{{- if and .c_cpp.enable .c_cpp.development .neovim.enable }}
+{{- $c_cpp := get . "c_cpp" | default dict -}}
+{{- $neovim := get . "neovim" | default dict -}}
+{{- if and (get $c_cpp "enable" | default false) (get $c_cpp "development" | default false) (get $neovim "enable" | default false) }}
 
 # Install C/C++ Neovim tools
-cargo install neocmakelsp
+if ! command -v neocmakelsp >/dev/null 2>&1; then
+    cargo install neocmakelsp
+fi
 
 {{- end }}
 
-{{- if .neovim.enable }}
+{{- if get $neovim "enable" | default false }}
 
 # Install Neovim tools
-cargo install --locked tree-sitter-cli
+if ! command -v tree-sitter >/dev/null 2>&1; then
+    cargo install --locked tree-sitter-cli
+fi
 
 {{- end }}
 

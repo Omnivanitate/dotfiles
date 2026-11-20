@@ -1,20 +1,20 @@
-{{- if .c_cpp.enable -}}
+{{- $c_cpp := get . "c_cpp" | default dict -}}
+{{- if get $c_cpp "enable" | default (eq .chezmoi_profile "full") -}}
 {{- if eq .chezmoi.os "linux" -}}
 #!/bin/sh
 
 set -eu
 
 {{- if eq .chezmoi.osRelease.id "debian" "ubuntu" }}
-#Update packages
+# Update packages
 sudo apt update
-{{- end }}
 
-{{- if eq .chezmoi.osRelease.id "debian" "ubuntu" }}
 {{ include "install_packages/c_cpp/ubuntu_debian" }}
+
+{{- if get $c_cpp "development" | default false }}
+{{ include "install_packages/c_cpp/ubuntu_debian_development" }}
 {{- end }}
 
-{{- if .c_cpp.development }}
-{{ include "install_packages/c_cpp/ubuntu_debian_development" }}
 {{- end }}
 
 {{- end }}

@@ -1,32 +1,38 @@
-{{- if .python.enable -}}
+{{- $python := get . "python" | default dict -}}
+{{- if get $python "enable" | default (eq .chezmoi_profile "full") -}}
 {{- if eq .chezmoi.os "linux" -}}
 #!/bin/sh
+
+set -eu
 
 {{ if eq .chezmoi.osRelease.id "debian" "ubuntu" -}}
 sudo apt update
 {{ include "install_packages/python/ubuntu_debian" -}}
 {{- end }}
 
-{{- $local_programs_dir := get . "programs_directory" | default "" -}}
+{{- $local_programs_dir := get . "programs_directory" | default (joinPath .chezmoi.homeDir ".local") -}}
+{{- $pyenv := get $python "pyenv" | default dict -}}
+{{- $uv := get $python "uv" | default dict -}}
 
-{{- if .python.pyenv.enable }}
+{{- if get $pyenv "enable" | default false }}
 if command -v pyenv >/dev/null 2>&1; then
     echo "pyenv already installed"
     pyenv --version
 else
-    mkdir -p {{ .python.pyenv.program_directory }}
-    git clone https://github.com/pyenv/pyenv.git {{ .python.pyenv.program_directory }}
-    cd {{ .python.pyenv.program_directory }}
-    cd {{ .python.pyenv.program_directory }} && src/configure && make -C src
+    PYENV_DIR={{ get $pyenv "program_directory" | default (joinPath $local_programs_dir "pyenv") | quote }}
+    mkdir -p "${PYENV_DIR}"
+    git clone https://github.com/pyenv/pyenv.git "${PYENV_DIR}"
+    cd "${PYENV_DIR}"
+    src/configure && make -C src
 fi
 {{- end }}
 
-{{- if .python.uv.enable }}
+{{- if get $uv "enable" | default false }}
 
-if command -v uv >/dev/null 2>&1; then 
+if command -v uv >/dev/null 2>&1; then
     echo "uv already installed"
     uv --version
-else 
+else
     curl -LsSf https://astral.sh/uv/install.sh | sh
 fi
 {{- end }}

@@ -1,52 +1,51 @@
 {{- $neovim := get . "neovim" | default dict -}}
-{{- if get $neovim "enable" | default false }}
+{{- if get $neovim "enable" | default (eq .chezmoi_profile "full" "default") }}
 {{- if eq .chezmoi.os "linux" -}}
 #!/bin/sh
 
 set -eu
 
 {{- if eq .chezmoi.osRelease.id "debian" "ubuntu" }}
-#Update packages
+# Update packages
 sudo apt update
+
+{{ include "install_packages/neovim/ubuntu_debian" }}
 {{- end }}
 
 {{- $default_home_path := "${HOME}" }}
-
-# Get version from chezmoi data, environment, or ask interactively
-NVIM_VERSION={{- get $neovim "version" | default "" | quote }}
-
-PROFILE_FILE={{- get . "profile" | default (joinPath $default_home_path ".profile") | quote }}
-
-{{- $default_sources_codes_dir := get . "sources_codes" | default (joinPath $default_home_path ".sources_codes") }}
-
-NVIM_SOURCE_DIR={{ get .neovim "source_codes" | default (joinPath $default_sources_codes_dir "neovim") | quote }}
-
+{{- $default_sources_codes_dir := get . "sources_codes_directory" | default (joinPath $default_home_path ".sources_codes") }}
 {{- $default_programs_dir := get . "programs_directory" | default (joinPath $default_home_path ".local") }}
 
-NVIM_PROGRAM_DIR={{- get .neovim "program_directory" | default (joinPath $default_programs_dir "nvim") | quote }}
+# Get version from chezmoi data, or ask interactively
+NVIM_VERSION={{- get $neovim "version" | default "" | quote }}
+
+NVIM_SOURCE_DIR={{ get $neovim "source_codes_directory" | default (joinPath $default_sources_codes_dir "neovim") | quote }}
+
+NVIM_PROGRAM_DIR={{- get $neovim "program_directory" | default (joinPath $default_programs_dir "nvim") | quote }}
 
 echo "Neovim source directory: ${NVIM_SOURCE_DIR}"
 echo "Neovim program directory: ${NVIM_PROGRAM_DIR}"
 echo "Neovim version: v${NVIM_VERSION}"
 
 # Ask for version if not provided in environment
-
-if [ -z "${NVIM_VERSION}" ]; then  
-    printf "Enter Neovim version (example: v0.10.4): "
-    read ${NVIM_VERSION}
+if [ -z "${NVIM_VERSION:-}" ]; then
+    printf "Enter Neovim version (example: 0.10.4): "
+    read -r NVIM_VERSION
 fi
 
-# Validate input
+# Strip leading v if present
+NVIM_VERSION="${NVIM_VERSION#v}"
 
-if [-z "${NVIM_VERSION}" ]; then
-    echo "Error version is required"
+# Validate input
+if [ -z "${NVIM_VERSION:-}" ]; then
+    echo "Error: version is required"
     exit 1
 fi
 
 # Skip reinstall if same version already installed
-if command -v ${NVIM_PROGRAM_DIR}/bin/nvim >/dev/null 2>&1; then
+if [ -x "${NVIM_PROGRAM_DIR}/bin/nvim" ]; then
     INSTALLED_VERSION="$(${NVIM_PROGRAM_DIR}/bin/nvim --version | head -n 1 | awk '{print $2}')"
-    echo "Installed neovim versiobn: ${INSTALLED_VERSION}"
+    echo "Installed neovim version: ${INSTALLED_VERSION}"
     if [ "${INSTALLED_VERSION}" = "v${NVIM_VERSION}" ]; then
         echo "Neovim v${NVIM_VERSION} already installed. Skipping."
         ${NVIM_PROGRAM_DIR}/bin/nvim --version | head -n 1
@@ -56,26 +55,22 @@ fi
 
 REPO_URL="https://github.com/neovim/neovim.git"
 
-{{if eq .chezmoi.osRelease.id "debian" "ubuntu" -}}
-{{- include "install_packages/neovim/ubuntu_debian" -}}
-{{- end }}
-
-echo "Install Neovim version: ${NVIM_VERSION}"
+echo "Install Neovim version: v${NVIM_VERSION}"
 
 # Remove old build directory
-rm -rf ${NVIM_SOURCE_DIR}
+rm -rf "${NVIM_SOURCE_DIR}"
 
 # Clone specific version
 git clone --branch "v${NVIM_VERSION}" --depth 1 "${REPO_URL}" "${NVIM_SOURCE_DIR}"
 
-cd $NVIM_SOURCE_DIR
+cd "${NVIM_SOURCE_DIR}"
 
 # Build dependencies and compile
 make CMAKE_EXTRA_FLAGS="-DCMAKE_INSTALL_PREFIX=${NVIM_PROGRAM_DIR}" CMAKE_BUILD_TYPE=Release
 
 make install
 
-echo "Neovim ${NVIM_VERSION} installed successfully"
+echo "Neovim v${NVIM_VERSION} installed successfully"
 ${NVIM_PROGRAM_DIR}/bin/nvim --version | head -n 1
 
 {{ $config_repo := get $neovim "config_repo" | default "" -}}
@@ -83,7 +78,14 @@ ${NVIM_PROGRAM_DIR}/bin/nvim --version | head -n 1
 {{- $home_directory := get . "home_directory" | default "${HOME}" -}}
 {{- $configuration_directory := get . "configuration_directory" | default (joinPath $home_directory ".config") -}}
 {{ $neovim_config_folder := get $neovim "config_folder" | default (joinPath $configuration_directory "nvim") }}
-git clone {{ $config_repo | quote }} {{ $neovim_config_folder | quote }}
+
+# Install/update neovim config
+if [ -d {{ joinPath $neovim_config_folder ".git" | quote }} ]; then
+    echo "Neovim config already present, updating..."
+    git -C {{ $neovim_config_folder | quote }} pull --ff-only
+else
+    git clone {{ $config_repo | quote }} {{ $neovim_config_folder | quote }}
+fi
 {{- end }}
 
 {{- end }}

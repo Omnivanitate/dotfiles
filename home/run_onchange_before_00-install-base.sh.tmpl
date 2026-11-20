@@ -1,49 +1,68 @@
 {{ if eq .chezmoi.os "linux" -}}
 {{- $local_home_dir := "${HOME}" -}}
 {{- $local_programs_directory := get . "programs_directory" | default (joinPath $local_home_dir ".local") -}}
+{{- $zsh := get . "zsh" | default dict -}}
+{{- $zsh_enable := get $zsh "enable" | default (eq .chezmoi_profile "full" "default") -}}
+{{- $tmux := get . "tmux" | default dict -}}
+{{- $tmux_enable := get $tmux "enable" | default (eq .chezmoi_profile "full") -}}
 #!/bin/sh
 
 set -eu
 
 {{- if eq .chezmoi.osRelease.id "debian" "ubuntu" }}
-#Update packages
+# Update packages
 sudo apt update
 
 {{ include "install_packages/base/ubuntu_debian" }}
 
-{{- if .tmux.enable }}
-#install tmux
+{{- if $tmux_enable }}
+# Install tmux
 {{ include "install_packages/tmux/ubuntu_debian" -}}
 {{- end }}
 
-{{- if .zsh.enable }}
-#install zsh 
+{{- if $zsh_enable }}
+# Install zsh
 {{ include "install_packages/zsh/ubuntu_debian" }}
 {{- end }}
 
 {{- end }}
 
-{{- if .zsh.enable }}
-#install oh-my-zsh
-OH_MY_ZSH={{ get .zsh "program_directory" | default (joinPath $local_programs_directory "oh-my-zsh") | quote }}
+{{- if $zsh_enable }}
+# Install oh-my-zsh
+OH_MY_ZSH={{ get $zsh "program_directory" | default (joinPath $local_programs_directory "oh-my-zsh") | quote }}
 
 if [ -d "${OH_MY_ZSH}" ]; then
     echo "Oh My Zsh is already installed at: ${OH_MY_ZSH}"
 else
-    echo "Oh My Zsh is not installed. Installing..."
+    if ! command -v zsh >/dev/null 2>&1; then
+        echo "Warning: zsh not found, skipping Oh My Zsh install"
+    else
+        echo "Oh My Zsh is not installed. Installing..."
 
-    # Install Oh My Zsh unattended
-    ZSH=${OH_MY_ZSH} \
-        sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" \
-        "" --unattended --keep-zshrc
-    echo "Installation oh-my-zsh completed."
+        # Install Oh My Zsh unattended
+        ZSH=${OH_MY_ZSH} \
+            sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" \
+            "" --unattended --keep-zshrc
+        echo "Installation oh-my-zsh completed."
+    fi
 fi
 
-mkdir -p ${OH_MY_ZSH}/custom/plugins/chezmoi
-chezmoi completion zsh > ${OH_MY_ZSH}/custom/plugins/chezmoi/_chezmoi
+if [ -d "${OH_MY_ZSH}" ]; then
+    mkdir -p "${OH_MY_ZSH}/custom/plugins/chezmoi"
+    {{ .chezmoi.executable | quote }} completion zsh > "${OH_MY_ZSH}/custom/plugins/chezmoi/_chezmoi"
+fi
 
-USER={{ .chezmoi.username }}
-sudo chsh -s $(which zsh) $USER
+# Change login shell to zsh if installed and not already the login shell
+if command -v zsh >/dev/null 2>&1; then
+    ZSH_BIN="$(command -v zsh)"
+    if [ "$(getent passwd "$(id -un)" | cut -d: -f7)" != "${ZSH_BIN}" ]; then
+        if command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
+            sudo chsh -s "${ZSH_BIN}" "$(id -un)"
+        else
+            echo "Warning: change login shell manually with: chsh -s ${ZSH_BIN}"
+        fi
+    fi
+fi
 
 {{- end }}
 {{- end }}
