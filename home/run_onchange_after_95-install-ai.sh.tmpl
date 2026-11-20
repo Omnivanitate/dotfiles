@@ -1,23 +1,20 @@
-{{- if and .ai.enable (eq .chezmoi.os "linux") -}}
+{{- $ai := get . "ai" | default dict -}}
+{{- if and (get $ai "enable" | default (eq .chezmoi_profile "full" "default")) (eq .chezmoi.os "linux") -}}
 {{- $local_home_dir := "${HOME}" -}}
 {{- $local_programs_directory := get . "programs_directory" | default (joinPath $local_home_dir ".local") -}}
-#!/usr/bin/env bash
+#!/bin/sh
 
 set -eu
 
-{{- if $local_programs_directory }}
-export OPENCODE_HOME="{{- $local_programs_directory -}}/opencode"
-{{ else }}
-export OPENCODE_HOME="${HOME}/.local/opencode"
-{{- end }}
+export OPENCODE_HOME={{ get $ai "opencode_home" | default (joinPath $local_programs_directory "opencode") | quote }}
 
-{{- if eq .chezmoi.osRelease.id "debian" "ubuntu" }}
-#Update packages
-sudo apt update
-{{ end }}
+mkdir -p "${OPENCODE_HOME}/bin"
 
-curl -fsSL https://opencode.ai/install |                                                                                                                                                                
-    sed "s|INSTALL_DIR=\$HOME/.opencode/bin|INSTALL_DIR=\$HOME/.local/bin|" |
+# Install OpenCode 2 into ${OPENCODE_HOME}/bin instead of the default ~/.opencode/bin
+curl -fsSL https://opencode.ai/v2/install |
+    sed 's|^INSTALL_DIR=.*|INSTALL_DIR=${OPENCODE_HOME}/bin|' |
     bash -s -- --no-modify-path
+
+"${OPENCODE_HOME}/bin/opencode" --version
 
 {{- end }}

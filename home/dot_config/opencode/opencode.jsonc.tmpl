@@ -1,0 +1,19 @@
+{{- $ai := get . "ai" | default dict -}}
+{
+  "$schema": "https://opencode.ai/config.json"
+{{- if get $ai "model" | default "" }},
+  "model": {{ get $ai "model" | quote }}
+{{- end }}
+{{- if get $ai "base_url" | default "" }},
+  "provider": {
+    "custom": {
+      "options": {
+        "baseURL": {{ get $ai "base_url" | quote }}
+{{- if get $ai "api_key_env" | default "" }},
+        "apiKey": "{env:{{ get $ai "api_key_env" }}}"
+{{- end }}
+      }
+    }
+  }
+{{- end }}
+}
