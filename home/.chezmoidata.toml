@@ -34,7 +34,7 @@ enable = true
 
 [neovim]
 enable = true
-version = "0.11.7"
+version = "0.12.6"
 config_repo = "https://github.com/Omnivanitate/neovimrc.git"
 
 [ai]
