@@ -1,15 +1,26 @@
-{{- if and .special (eq .chezmoi.os "linux") -}}
+{{- $neovim := get . "neovim" | default dict -}}
+{{- $configuration_directory := get . "configuration_directory" | default (joinPath "${HOME}" ".config") -}}
+{{- $neovim_config_folder := get $neovim "config_folder" | default (joinPath $configuration_directory "nvim") -}}
 #!/bin/sh
+
 set -eu
 
+{{ if and (get . "special" | default false) (eq .chezmoi.os "linux") -}}
 echo "Start special pull"
 
-env -C {{ .chezmoi.workingTree }} git submodule update --init --recursive
+if [ -d {{ joinPath .chezmoi.workingTree ".git" | quote }} ]; then
+    git -C {{ .chezmoi.workingTree | quote }} submodule update --init --recursive \
+        || echo "Warning: dotfiles submodule update failed (credentials?) — secret files not installed"
+fi
 
-{{- if .neovim.enable }}
-env -C "${HOME}/.config/nvim" git submodule update --init --recursive
+{{- if get $neovim "enable" | default false }}
+if [ -d {{ joinPath $neovim_config_folder ".git" | quote }} ]; then
+    git -C {{ $neovim_config_folder | quote }} submodule update --init --recursive \
+        || echo "Warning: neovim config submodule update failed"
+fi
 {{- end }}
 
 echo "End special pull"
-
+{{- else }}
+echo "Special disabled, skipping"
 {{- end }}
