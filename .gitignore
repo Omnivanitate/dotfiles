@@ -1,0 +1,2 @@
+# Per-machine chezmoi data (secrets and machine-specific overrides)
+home/.chezmoidata/

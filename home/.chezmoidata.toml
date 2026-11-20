@@ -1,0 +1,41 @@
+# Shared personal data for all machines.
+# Machine-specific overrides go in .chezmoidata/*.toml (gitignored, merged last).
+
+[gitconfig]
+email = "vladislav.serebraykov@geo-lab.ru"
+name = "Serebryakov Vladislav"
+
+[gitconfig.credential]
+helper = "cache"
+
+[c_cpp]
+enable = true
+development = true
+
+[rust]
+enable = true
+cargo_home = "${HOME}/.local/cargo"
+rustup_home = "${HOME}/.local/rustup"
+
+[python]
+enable = true
+
+[python.pyenv]
+enable = true
+
+[python.uv]
+enable = true
+
+[zsh]
+enable = true
+
+[tmux]
+enable = true
+
+[neovim]
+enable = true
+version = "0.12.0"
+config_repo = "https://github.com/Omnivanitate/neovimrc.git"
+
+[ai]
+enable = true
