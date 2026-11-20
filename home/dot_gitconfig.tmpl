@@ -2,12 +2,11 @@
     excludesFile = ~/.config/git/ignore
 
 [user]
-	email = {{ .gitconfig.email }}
-	name = {{ .gitconfig.name }}
+	email = {{ get .gitconfig "email" | default "" }}
+	name = {{ get .gitconfig "name" | default "" }}
 
 [init]
     defaultBranch = main
 
 [credential]
-    helper = {{ .gitconfig.credential.helper }}
-
+    helper = {{ get (get .gitconfig "credential" | default dict) "helper" | default "cache" }}
