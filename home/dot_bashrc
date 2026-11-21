@@ -111,3 +111,9 @@ if ! shopt -oq posix; then
     . /etc/bash_completion
   fi
 fi
+
+# The container's main process is bash. Hand over to zsh immediately
+# so that `docker start -ai <container>` drops straight into zsh.
+if command -v zsh >/dev/null 2>&1; then
+    exec zsh
+fi
